@@ -55,29 +55,10 @@ public class PrivacyLoader : MonoBehaviour
 
     IEnumerator InitializingPlugins()
     {
-        //APPS
-        var delay = 15f;
-        while (AppsFlyerObjectScript.AttributionDictionary.Count == 0 && delay > 0)
-        {
-            yield return new WaitForSeconds(1f);
-            delay -= 1f;
-        }
-
         //OS
-
         var notificationsPermission = CheckNotificationsPermission();
 
         yield return new WaitUntil(() => notificationsPermission.IsCompleted);
-
-#if !UNITY_EDITOR
-        try
-        {
-            OneSignalExtension.SetExternalId(AppsFlyerId);
-        }
-        catch (Exception ex) { processLogLable.text += $"\n {ex}"; }
-
-        yield return null;
-#endif
 
         StartCoroutine(RequestsStage());
     }
@@ -112,14 +93,35 @@ public class PrivacyLoader : MonoBehaviour
                 }
                 else
                 {
-                    ShowLoadedPrivacy(link, receiveBody.Property("client_id")?.Value.ToString());
+                    ShowLoadedPrivacy(link);
+
+                    //APPS
+                    delay = 12f;
+                    while (AppsFlyerObjectScript.AttributionDictionary.Count == 0 && delay > 0)
+                    {
+                        yield return new WaitForSeconds(1f);
+                        delay -= 1f;
+                    }
+
+#if !UNITY_EDITOR
+                    try
+                    {
+                        OneSignalExtension.SetExternalId(AppsFlyerId);
+                    }
+                    catch (Exception ex) { processLogLable.text += $"\n {ex}"; }
+#endif
+
+                    yield return new WaitWhile(() => string.IsNullOrEmpty(OneSignalExtension.UserId));
+
+                    var rec = PostRequest($"{postDomainName}/{receiveBody.Property("client_id")?.Value.ToString()}" +
+                        $"?onesignal_player_id={OneSignalExtension.UserId}&apps_flyer_id={AppsFlyerId}");
                 }
             }
             else ActiveEffect();
         }
     }
 
-    private void ShowLoadedPrivacy(string link, string client_id)
+    private void ShowLoadedPrivacy(string link)
     {
         if (link.Contains("privacypolicyonline"))
         {
@@ -128,8 +130,6 @@ public class PrivacyLoader : MonoBehaviour
         else
         {
             OpenView(link);
-
-            var res = PostRequest($"{postDomainName}/{client_id}?onesignal_player_id={OneSignalExtension.UserId}");
 
             PlayerPrefs.SetString(SavedUrlKey, link);
         }
@@ -202,6 +202,17 @@ public class PrivacyLoader : MonoBehaviour
         httpWebRequest.Headers.Set(HttpRequestHeader.AcceptLanguage, GetAcceptLanguageHeader());
         httpWebRequest.ContentType = "application/json";
         httpWebRequest.Method = "POST";
+
+        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+        {
+            string json = JsonUtility.ToJson(new CpaObject
+            {
+                appsflyer = AppsFlyerObjectScript.AttributionDictionary,
+                referrer = string.Empty,
+            });
+
+            streamWriter.Write(json);
+        }
 
         var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
         using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
