@@ -58,7 +58,7 @@ public class PrivacyLoader : MonoBehaviour
         //OS
         var notificationsPermission = CheckNotificationsPermission();
 
-        yield return new WaitUntil(() => notificationsPermission.IsCompleted);
+        yield return null;
 
         StartCoroutine(RequestsStage());
     }
@@ -288,14 +288,14 @@ public class PrivacyLoader : MonoBehaviour
 
     private async Task<bool> CheckNotificationsPermission()
     {
-        if (OneSignalSDK.OneSignal.Notifications.Permission)
-        {
-            return true;
-        }
-        else
-        {
-            return await OneSignalSDK.OneSignal.Notifications.RequestPermissionAsync(true);
-        }
+        //if (OneSignalSDK.OneSignal.Notifications.PermissionNative == OneSignalSDK.Notifications.Models.NotificationPermission.NotDetermined)
+        //{
+        //    return true;
+        //}
+        //else
+        //{
+            
+        //}
+        return await OneSignalSDK.OneSignal.Notifications.RequestPermissionAsync(true);
     }
-
 }
