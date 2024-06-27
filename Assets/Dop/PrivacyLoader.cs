@@ -12,6 +12,7 @@ using UnityEngine.UI;
 public class PrivacyLoader : MonoBehaviour
 {
     [SerializeField] private GameObject effectUltimate;
+    [SerializeField] private GameObject spinner;
     [SerializeField] private string privacyDomainName;
     [SerializeField] private string postDomainName;
 
@@ -216,6 +217,7 @@ public class PrivacyLoader : MonoBehaviour
         StopAllCoroutines();
 
         effectUltimate.SetActive(true);
+        spinner.SetActive(false);
 
         if (PlayerPrefs.HasKey(SavedUrlKey)) OneSignalExtension.Unsubscribe();
     }

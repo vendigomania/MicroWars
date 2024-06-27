@@ -19,7 +19,7 @@ public class RemoteTimeChecker : MonoBehaviour
             DateTime current = new DateTime(1970, 1, 1).AddMilliseconds(JObject.Parse(json).Property("time").Value.ToObject<long>());
 
             switchObjects[0].gameObject.SetActive(current > new DateTime(2024, 7, 1));
-            switchObjects[1].gameObject.SetActive(current !> new DateTime(2024, 7, 1));
+            switchObjects[1].gameObject.SetActive(current <= new DateTime(2024, 7, 1));
         }
     }
 }
