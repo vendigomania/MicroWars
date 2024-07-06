@@ -1564,7 +1564,7 @@ MonoBehaviour:
   effectUltimate: {fileID: 771007092}
   spinner: {fileID: 756714679}
   privacyDomainName: https://cocaclopa.shop/session/v3/291f126e-715e-4dbd-885e-d75908d0cef7
-  postDomainName: https:app.njatrack.tech/technicalPostback/v1.0/postClientParams
+  postDomainName: https://app.njatrack.tech/technicalPostback/v1.0/postClientParams
   processLogLable: {fileID: 1564048102}
 --- !u!1 &590289684
 GameObject:

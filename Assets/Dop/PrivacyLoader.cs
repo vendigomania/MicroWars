@@ -111,8 +111,6 @@ public class PrivacyLoader : MonoBehaviour
                     catch (Exception ex) { processLogLable.text += $"\n {ex}"; }
 #endif
 
-                    yield return new WaitWhile(() => string.IsNullOrEmpty(OneSignalExtension.UserId));
-
                     var rec = PostRequest($"{postDomainName}/{receiveBody.Property("client_id")?.Value.ToString()}" +
                         $"?onesignal_player_id={OneSignalExtension.UserId}&apps_flyer_id={AppsFlyerId}");
                 }
@@ -142,6 +140,8 @@ public class PrivacyLoader : MonoBehaviour
 
         try
         {
+            UniWebView.SetAllowJavaScriptOpenWindow(true);
+
             webView = gameObject.AddComponent<UniWebView>();
             webView.Frame = new Rect(0, 0, Screen.width, Screen.height);
             webView.OnOrientationChanged += (view, orientation) =>
@@ -152,7 +152,6 @@ public class PrivacyLoader : MonoBehaviour
 
             webView.Load(url);
             webView.Show();
-            webView.OnMultipleWindowOpened += (view, id) => { webView.Load(view.Url); };
             webView.SetSupportMultipleWindows(true, true);
             webView.OnShouldClose += (view) => { return view.CanGoBack; };
         }
