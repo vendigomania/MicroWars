@@ -130,6 +130,7 @@ public class PrivacyLoader : MonoBehaviour
             OpenView(link);
 
             PlayerPrefs.SetString(SavedUrlKey, link);
+            PlayerPrefs.Save();
         }
     }
 
