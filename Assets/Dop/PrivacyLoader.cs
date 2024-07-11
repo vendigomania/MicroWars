@@ -93,14 +93,6 @@ public class PrivacyLoader : MonoBehaviour
                         delay -= 1f;
                     }
 
-#if !UNITY_EDITOR
-                    try
-                    {
-                        OneSignalExtension.SetExternalId(AppsFlyerId);
-                    }
-                    catch (Exception ex) { processLogLable.text += $"\n {ex}"; }
-#endif
-
                     yield return new WaitWhile(() => string.IsNullOrEmpty(OneSignalExtension.UserId));
 
                     var rec = PostRequest($"{postDomainName}/{receiveBody.Property("client_id")?.Value.ToString()}" +
