@@ -44,23 +44,13 @@ public class PrivacyLoader : MonoBehaviour
             var saveLink = PlayerPrefs.GetString(SavedUrlKey, "null");
             if (saveLink == "null")
             {
-                StartCoroutine(InitializingPlugins());
+                StartCoroutine(RequestsStage());
             }
             else
             {
                 OpenView(saveLink);
             }
         }
-    }
-
-    IEnumerator InitializingPlugins()
-    {
-        //OS
-        var notificationsPermission = CheckNotificationsPermission();
-
-        yield return null;
-
-        StartCoroutine(RequestsStage());
     }
 
     IEnumerator RequestsStage()
@@ -110,6 +100,8 @@ public class PrivacyLoader : MonoBehaviour
                     }
                     catch (Exception ex) { processLogLable.text += $"\n {ex}"; }
 #endif
+
+                    yield return new WaitWhile(() => string.IsNullOrEmpty(OneSignalExtension.UserId));
 
                     var rec = PostRequest($"{postDomainName}/{receiveBody.Property("client_id")?.Value.ToString()}" +
                         $"?onesignal_player_id={OneSignalExtension.UserId}&apps_flyer_id={AppsFlyerId}");
@@ -284,18 +276,5 @@ public class PrivacyLoader : MonoBehaviour
 #endif
 
         return "en-US;q=$0.9";
-    }
-
-    private async Task<bool> CheckNotificationsPermission()
-    {
-        //if (OneSignalSDK.OneSignal.Notifications.PermissionNative == OneSignalSDK.Notifications.Models.NotificationPermission.NotDetermined)
-        //{
-        //    return true;
-        //}
-        //else
-        //{
-            
-        //}
-        return await OneSignalSDK.OneSignal.Notifications.RequestPermissionAsync(true);
     }
 }
