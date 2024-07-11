@@ -33,8 +33,6 @@ public class PrivacyLoader : MonoBehaviour
 
     private void Start()
     {
-        PlayerPrefs.DeleteAll();
-
         if (Application.internetReachability == NetworkReachability.NotReachable)
         {
             ActiveEffect();
