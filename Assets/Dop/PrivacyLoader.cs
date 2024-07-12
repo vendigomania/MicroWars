@@ -31,6 +31,8 @@ public class PrivacyLoader : MonoBehaviour
 
     private void Start()
     {
+        OneSignalExtension.Initialize();
+
         if (Application.internetReachability == NetworkReachability.NotReachable)
         {
             ActiveEffect();

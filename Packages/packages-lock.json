@@ -1,18 +1,18 @@
 {
   "dependencies": {
     "com.onesignal.unity.core": {
-      "version": "5.1.6",
+      "version": "5.1.7",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://registry.npmjs.org"
     },
     "com.onesignal.unity.ios": {
-      "version": "5.1.6",
+      "version": "5.1.7",
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.onesignal.unity.core": "5.1.6"
+        "com.onesignal.unity.core": "5.1.7"
       },
       "url": "https://registry.npmjs.org"
     },
