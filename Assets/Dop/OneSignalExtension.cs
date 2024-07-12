@@ -3,7 +3,7 @@ using OneSignalSDK;
 
 public class OneSignalExtension : MonoBehaviour
 {
-    public static string UserId => OneSignal.User?.PushSubscription?.Id;
+    public static string UserId => OneSignal.User?.OneSignalId;
     public static string PushToken => OneSignal.User?.PushSubscription?.Token;
 
     public static void SetExternalId(string _id)
