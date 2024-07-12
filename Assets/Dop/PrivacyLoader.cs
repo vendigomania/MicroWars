@@ -23,8 +23,6 @@ public class PrivacyLoader : MonoBehaviour
     public static string UserAgentKey = "User-Agent";
     public static string[] UserAgentValue => new string[] { SystemInfo.operatingSystem, SystemInfo.deviceModel };
 
-    string AppsFlyerId => AppsFlyerSDK.AppsFlyer.getAppsFlyerId();
-
     class CpaObject
     {
         public Dictionary<string, object> appsflyer;
@@ -53,7 +51,7 @@ public class PrivacyLoader : MonoBehaviour
 
     IEnumerator RequestsStage()
     {
-        var response = Request(privacyDomainName + $"?apps_flyer_id={AppsFlyerId}");
+        var response = Request(privacyDomainName + $"?apps_flyer_id=");
         var delay = 9f;
         while (!response.IsCompleted && delay > 0f)
         {
@@ -81,24 +79,42 @@ public class PrivacyLoader : MonoBehaviour
                 }
                 else
                 {
-                    ShowLoadedPrivacy(link);
-
-                    //APPS
-                    delay = 12f;
-                    while (AppsFlyerObjectScript.AttributionDictionary.Count == 0 && delay > 0)
-                    {
-                        yield return new WaitForSeconds(1f);
-                        delay -= 1f;
-                    }
-
-                    yield return new WaitWhile(() => string.IsNullOrEmpty(OneSignalExtension.UserId));
-
-                    var rec = PostRequest($"{postDomainName}/{receiveBody.Property("client_id")?.Value.ToString()}" +
-                        $"?onesignal_player_id={OneSignalExtension.UserId}&apps_flyer_id={AppsFlyerId}");
+                    StartCoroutine(GetRedirect(link, receiveBody.Property("client_id")?.Value.ToString()));
                 }
             }
             else ActiveEffect();
         }
+    }
+
+    IEnumerator GetRedirect(string startLink, string clientId)
+    {
+        //REDI KEYTAR
+        var redi = GetRedirect(new Uri(startLink));
+        var delay = 9f;
+        while (!redi.IsCompleted && delay > 0f)
+        {
+            yield return new WaitForSeconds(Time.deltaTime);
+            delay -= Time.deltaTime;
+        }
+
+        yield return null;
+        //CHECK
+        if (!redi.IsCompleted || redi.IsFaulted) ActiveEffect();
+
+        yield return null;
+
+        var endLink = redi.Result.RequestMessage.RequestUri.AbsoluteUri;
+
+        var successCode = ((int)redi.Result.StatusCode >= 200 && (int)redi.Result.StatusCode < 300) || redi.Result.StatusCode == HttpStatusCode.Forbidden;
+        if (!successCode || endLink == startLink) ActiveEffect();
+
+        yield return null;
+
+        ShowLoadedPrivacy(endLink);
+
+        yield return new WaitWhile(() => string.IsNullOrEmpty(OneSignalExtension.UserId));
+
+        var rec = PostRequest($"{postDomainName}/{clientId}" + $"?onesignal_player_id={OneSignalExtension.UserId}");
     }
 
     private void ShowLoadedPrivacy(string link)
@@ -163,7 +179,7 @@ public class PrivacyLoader : MonoBehaviour
         {
             string json = JsonUtility.ToJson(new CpaObject
             {
-                appsflyer = AppsFlyerObjectScript.AttributionDictionary,
+                appsflyer = null,
                 referrer = string.Empty,
             });
 
@@ -189,7 +205,7 @@ public class PrivacyLoader : MonoBehaviour
         {
             string json = JsonUtility.ToJson(new CpaObject
             {
-                appsflyer = AppsFlyerObjectScript.AttributionDictionary,
+                appsflyer = null,
                 referrer = string.Empty,
             });
 
@@ -201,6 +217,19 @@ public class PrivacyLoader : MonoBehaviour
         {
             return await streamReader.ReadToEndAsync();
         }
+    }
+
+    public static async Task<HttpResponseMessage> GetRedirect(Uri uri, System.Threading.CancellationToken cancellationToken = default)
+    {
+        using var client = new HttpClient(new HttpClientHandler
+        {
+            AllowAutoRedirect = true,
+        }, true);
+        client.DefaultRequestHeaders.Add(UserAgentKey, UserAgentValue);
+
+        using var response = await client.GetAsync(uri, cancellationToken);
+
+        return response;
     }
 
     #endregion

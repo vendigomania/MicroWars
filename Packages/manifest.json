@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.onesignal.unity.ios": "5.1.6",
+    "com.onesignal.unity.ios": "5.1.7",
     "com.unity.ai.navigation": "1.1.5",
     "com.unity.collab-proxy": "2.3.1",
     "com.unity.feature.2d": "2.0.0",
