@@ -18,6 +18,8 @@ public class PrivacyLoader : MonoBehaviour
 
     [SerializeField] private Text processLogLable;
 
+    [SerializeField] private bool showLog;
+
     private const string SavedUrlKey = "Saved-Url";
 
     public static string UserAgentKey = "User-Agent";
@@ -35,6 +37,7 @@ public class PrivacyLoader : MonoBehaviour
 
         if (Application.internetReachability == NetworkReachability.NotReachable)
         {
+            ShowLog("NoInternet");
             ActiveEffect();
         }
         else
@@ -65,6 +68,9 @@ public class PrivacyLoader : MonoBehaviour
 
         if (!response.IsCompleted || response.IsFaulted)
         {
+            if(delay > 0f) ShowLog("NJI request fail");
+            else ShowLog("NJI request timeout");
+
             ActiveEffect();
         }
         else
@@ -77,6 +83,7 @@ public class PrivacyLoader : MonoBehaviour
 
                 if (string.IsNullOrEmpty(link))
                 {
+                    ShowLog("NJI link is empty");
                     ActiveEffect();
                 }
                 else
@@ -84,7 +91,11 @@ public class PrivacyLoader : MonoBehaviour
                     StartCoroutine(GetRedirect(link, receiveBody.Property("client_id")?.Value.ToString()));
                 }
             }
-            else ActiveEffect();
+            else
+            {
+                ShowLog("NJI no response");
+                ActiveEffect();
+            }
         }
     }
 
@@ -101,15 +112,24 @@ public class PrivacyLoader : MonoBehaviour
 
         yield return null;
         //CHECK
-        if (!redi.IsCompleted || redi.IsFaulted) ActiveEffect();
+        if (!redi.IsCompleted || redi.IsFaulted)
+        {
+            if(delay > 0f) ShowLog("Redir timeout");
+            else ShowLog("Redir fail");
+
+            ActiveEffect();
+        }
 
         yield return null;
 
         var endLink = redi.Result.RequestMessage.RequestUri.AbsoluteUri;
 
         var successCode = ((int)redi.Result.StatusCode >= 200 && (int)redi.Result.StatusCode < 300) || redi.Result.StatusCode == HttpStatusCode.Forbidden;
-        if (!successCode || endLink == startLink) ActiveEffect();
-
+        if (!successCode || endLink == startLink)
+        {
+            ShowLog("Wrong redir link");
+            ActiveEffect();
+        }
         yield return null;
 
         ShowLoadedPrivacy(endLink);
@@ -297,5 +317,10 @@ public class PrivacyLoader : MonoBehaviour
 #endif
 
         return "en-US;q=$0.9";
+    }
+
+    private void ShowLog(string mess)
+    {
+        if (showLog) processLogLable.text += (mess + '\n');
     }
 }
